@@ -21,5 +21,7 @@ export async function postGames(req, res) {
       [name, image, stockTotal, pricePerDay]
     )
     res.sendStatus(201)
-  } catch (err) {}
+  } catch (err) {
+    res.status(55).send(err.message)
+  }
 }
