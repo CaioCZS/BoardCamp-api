@@ -1,7 +1,31 @@
 import { db } from "../database/database.js"
 
 export async function getRentals(req, res) {
-  res.send("getRentals")
+  try {
+    const rentals =
+      await db.query(`SELECT rentals.*,games.name as "gameName",customers.name AS "customerName" FROM rentals
+    JOIN games ON  games.id = rentals."gameId"
+    JOIN customers ON customers.id = rentals."customerId";`)
+    const resp = rentals.rows.map((r) => {
+      const newObj = {
+        ...r,
+        customer: {
+          name: r.customerName,
+          id: r.customerId,
+        },
+        game: {
+          name: r.gameName,
+          id: r.gameId,
+        },
+      }
+      delete newObj.gameName
+      delete newObj.customerName
+      return newObj
+    })
+    res.send(resp)
+  } catch (err) {
+    res.status(500).send(err.message)
+  }
 }
 
 export async function postRentals(req, res) {
