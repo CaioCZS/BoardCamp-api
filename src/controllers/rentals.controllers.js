@@ -1,3 +1,4 @@
+import dayjs from "dayjs"
 import { db } from "../database/database.js"
 
 export async function getRentals(req, res) {
@@ -9,6 +10,7 @@ export async function getRentals(req, res) {
     const resp = rentals.rows.map((r) => {
       const newObj = {
         ...r,
+        rentDate: dayjs(r.rentDate).format("YYYY-MM-DD"),
         customer: {
           name: r.customerName,
           id: r.customerId,
