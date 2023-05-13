@@ -51,7 +51,10 @@ export async function postRentals(req, res) {
       [gameId]
     )
 
-    if (gameInStock.rowCount === gameInStock.rows[0].stockTotal) {
+    if (
+      gameInStock.rowCount > 0 &&
+      gameInStock.rowCount === gameInStock.rows[0].stockTotal
+    ) {
       return res.sendStatus(400)
     }
 
