@@ -17,6 +17,10 @@ customersRouter.post(
   schemaValidation(customerSchema),
   postCustomers
 )
-customersRouter.put("/customers/:id", putCustomers)
+customersRouter.put(
+  "/customers/:id",
+  schemaValidation(customerSchema),
+  putCustomers
+)
 
 export default customersRouter
