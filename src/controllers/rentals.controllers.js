@@ -32,6 +32,7 @@ export async function getRentals(req, res) {
 
 export async function postRentals(req, res) {
   const { customerId, gameId, daysRented } = req.body
+
   try {
     const customerExist = await db.query(
       `SELECT * FROM customers WHERE id=$1`,
@@ -73,9 +74,51 @@ export async function postRentals(req, res) {
 }
 
 export async function finishRentals(req, res) {
-  res.send("finishRentals")
+  const { id } = req.params
+
+  try {
+    const idExist = await db.query(
+      `SELECT rentals.*,games."pricePerDay" FROM rentals 
+    JOIN games ON rentals."gameId" = games.id
+    WHERE rentals.id=$1;`,
+      [id]
+    )
+    const rental = idExist.rows[0]
+
+    if (!rental) return res.sendStatus(404)
+    if (rental.returnDate !== null) return res.sendStatus(400)
+
+    const rentDate = rental.rentDate
+    const daysPassed = dayjs().diff(rentDate, "day")
+    const delayFee = (daysPassed - rental.daysRented) * rental.pricePerDay
+    const finalDelayFee = delayFee <= 0 ? 0 : delayFee
+
+    await db.query(
+      `
+    UPDATE rentals SET "returnDate" = now() , "delayFee" = $1
+    WHERE id=$2`,
+      [finalDelayFee, id]
+    )
+
+    res.sendStatus(200)
+  } catch (err) {
+    res.status(500).send(err.message)
+  }
 }
 
 export async function deleteRentals(req, res) {
-  res.send("deleteRentals")
+  const { id } = req.params
+
+  try {
+    const idExist = await db.query(`SELECT * FROM rentals WHERE id=$1`, [id])
+
+    if (idExist.rowCount === 0) return res.sendStatus(404)
+    if (idExist.rows[0].returnDate === null) return res.sendStatus(400)
+
+    await db.query(`DELETE FROM rentals WHERE id=$1`, [id])
+
+    res.sendStatus(200)
+  } catch (err) {
+    res.status(500).send(err.message)
+  }
 }
