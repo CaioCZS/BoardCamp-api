@@ -2,8 +2,13 @@ import dayjs from "dayjs"
 import { db } from "../database/database.js"
 
 export async function getCustomers(req, res) {
+  const { limit, offset } = req.query
+
   try {
-    const customers = await db.query(`SELECT * FROM customers`)
+    const customers = await db.query(
+      `SELECT * FROM customers OFFSET $1 LIMIT $2`,
+      [offset, limit]
+    )
     const fixDate = customers.rows.map((c) => {
       const { birthday } = c
       const fixBrth = dayjs(birthday).format("YYYY-MM-DD")

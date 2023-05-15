@@ -2,11 +2,15 @@ import dayjs from "dayjs"
 import { db } from "../database/database.js"
 
 export async function getRentals(req, res) {
+  const { limit, offset } = req.query
+
   try {
-    const rentals =
-      await db.query(`SELECT rentals.*,games.name as "gameName",customers.name AS "customerName" FROM rentals
+    const rentals = await db.query(
+      `SELECT rentals.*,games.name as "gameName",customers.name AS "customerName" FROM rentals
     JOIN games ON  games.id = rentals."gameId"
-    JOIN customers ON customers.id = rentals."customerId";`)
+    JOIN customers ON customers.id = rentals."customerId" OFFSET $1 LIMIT $2;`,
+      [offset, limit]
+    )
     const resp = rentals.rows.map((r) => {
       const newObj = {
         ...r,

@@ -1,8 +1,13 @@
 import { db } from "../database/database.js"
 
 export async function getGames(req, res) {
+  const { limit, offset } = req.query
+
   try {
-    const games = await db.query(`SELECT * FROM games;`)
+    const games = await db.query(`SELECT * FROM games OFFSET $1 LIMIT $2;`, [
+      offset,
+      limit,
+    ])
     res.send(games.rows)
   } catch (err) {
     res.status(500).send(err.message)
